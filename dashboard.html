@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epik Dashboard - Backend Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-gray-50" x-data="epikDashboard()">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold">Epik Dashboard</h1>
+                    <span class="ml-3 px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm">Backend Tool</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-sm opacity-75">Last Updated</p>
+                        <p class="text-sm font-medium" x-text="new Date().toLocaleString()"></p>
+                    </div>
+                    <button @click="refreshData()" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-blue-100 rounded-full">
+                        <i class="fas fa-calendar-check text-blue-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-600 text-sm">Total Bookings</p>
+                        <p class="text-2xl font-bold text-gray-800" x-text="stats.totalBookings">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-yellow-100 rounded-full">
+                        <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-600 text-sm">Pending</p>
+                        <p class="text-2xl font-bold text-gray-800" x-text="stats.pendingBookings">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 rounded-full">
+                        <i class="fas fa-user-check text-green-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-600 text-sm">Available Specialists</p>
+                        <p class="text-2xl font-bold text-gray-800" x-text="stats.availableSpecialists">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="p-3 bg-purple-100 rounded-full">
+                        <i class="fas fa-envelope text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-600 text-sm">Marketing Updates</p>
+                        <p class="text-2xl font-bold text-gray-800" x-text="stats.totalMarketingUpdates">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Sections -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Demo Bookings Section -->
+            <div class="bg-white rounded-xl shadow-lg">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>
+                            Demo Bookings
+                        </h2>
+                        <button @click="showBookingForm = true" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-plus mr-2"></i>Add Booking
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4 max-h-96 overflow-y-auto">
+                        <template x-for="booking in demoBookings" :key="booking.id">
+                            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <h3 class="font-semibold text-gray-800" x-text="booking.customerName"></h3>
+                                        <p class="text-sm text-gray-600" x-text="booking.email"></p>
+                                        <p class="text-sm text-gray-500 mt-1">
+                                            <i class="fas fa-building mr-1"></i>
+                                            <span x-text="booking.companyName || 'No company'"></span>
+                                        </p>
+                                        <p class="text-sm text-gray-500">
+                                            <i class="fas fa-calendar mr-1"></i>
+                                            <span x-text="new Date(booking.preferredDate).toLocaleDateString()"></span>
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 rounded-full text-xs font-medium"
+                                              :class="{
+                                                'bg-yellow-100 text-yellow-800': booking.status === 'pending',
+                                                'bg-blue-100 text-blue-800': booking.status === 'assigned',
+                                                'bg-green-100 text-green-800': booking.status === 'completed'
+                                              }"
+                                              x-text="booking.status"></span>
+                                        <button @click="assignSpecialist(booking)" class="text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-user-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="demoBookings.length === 0" class="text-center py-8 text-gray-500">
+                            <i class="fas fa-calendar-times text-4xl mb-4 opacity-50"></i>
+                            <p>No demo bookings yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Specialists Section -->
+            <div class="bg-white rounded-xl shadow-lg">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800">
+                        <i class="fas fa-users mr-2 text-green-600"></i>
+                        Customer Delight Specialists
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <template x-for="specialist in specialists" :key="specialist.id">
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h3 class="font-semibold text-gray-800" x-text="specialist.name"></h3>
+                                        <p class="text-sm text-gray-600" x-text="specialist.email"></p>
+                                        <span class="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
+                                              x-text="specialist.specialization"></span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="w-3 h-3 rounded-full mr-2"
+                                              :class="specialist.available ? 'bg-green-400' : 'bg-red-400'"></span>
+                                        <span class="text-sm text-gray-600"
+                                              x-text="specialist.available ? 'Available' : 'Busy'"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Marketing Updates Section -->
+        <div class="mt-8 bg-white rounded-xl shadow-lg">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-gray-800">
+                        <i class="fas fa-bullhorn mr-2 text-purple-600"></i>
+                        Marketing Updates
+                    </h2>
+                    <button @click="showMarketingForm = true" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-plus mr-2"></i>Send Update
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <template x-for="update in marketingUpdates" :key="update.id">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h3 class="font-semibold text-gray-800 mb-2" x-text="update.title"></h3>
+                            <p class="text-sm text-gray-600 mb-3" x-text="update.message"></p>
+                            <div class="flex justify-between items-center text-xs text-gray-500">
+                                <span x-text="update.recipients.length + ' recipients'"></span>
+                                <span x-text="new Date(update.sentAt).toLocaleDateString()"></span>
+                            </div>
+                        </div>
+                    </template>
+                    <div x-show="marketingUpdates.length === 0" class="col-span-full text-center py-8 text-gray-500">
+                        <i class="fas fa-bullhorn text-4xl mb-4 opacity-50"></i>
+                        <p>No marketing updates sent yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Demo Booking Modal -->
+    <div x-show="showBookingForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" x-cloak>
+        <div class="bg-white rounded-xl p-8 w-full max-w-md mx-4">
+            <h3 class="text-xl font-bold mb-6">Add New Demo Booking</h3>
+            <form @submit.prevent="createBooking()">
+                <div class="space-y-4">
+                    <input type="text" x-model="newBooking.customerName" placeholder="Customer Name" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <input type="email" x-model="newBooking.email" placeholder="Email" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <input type="tel" x-model="newBooking.phone" placeholder="Phone (optional)"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <input type="text" x-model="newBooking.companyName" placeholder="Company Name (optional)"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select x-model="newBooking.demoType" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Select Demo Type</option>
+                        <option value="product">Product Demo</option>
+                        <option value="technical">Technical Demo</option>
+                        <option value="sales">Sales Demo</option>
+                        <option value="custom">Custom Demo</option>
+                    </select>
+                    <input type="datetime-local" x-model="newBooking.preferredDate" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <textarea x-model="newBooking.notes" placeholder="Notes (optional)" rows="3"
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" @click="showBookingForm = false" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Create Booking</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Marketing Update Modal -->
+    <div x-show="showMarketingForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" x-cloak>
+        <div class="bg-white rounded-xl p-8 w-full max-w-md mx-4">
+            <h3 class="text-xl font-bold mb-6">Send Marketing Update</h3>
+            <form @submit.prevent="sendMarketingUpdate()">
+                <div class="space-y-4">
+                    <input type="text" x-model="newUpdate.title" placeholder="Update Title" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <textarea x-model="newUpdate.message" placeholder="Update Message" rows="4" required
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                    <textarea x-model="newUpdate.recipientsText" placeholder="Recipients (one email per line)" rows="3" required
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                    <select x-model="newUpdate.priority"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <option value="low">Low Priority</option>
+                        <option value="medium">Medium Priority</option>
+                        <option value="high">High Priority</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" @click="showMarketingForm = false" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Send Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function epikDashboard() {
+            return {
+                stats: {},
+                demoBookings: [],
+                specialists: [],
+                marketingUpdates: [],
+                showBookingForm: false,
+                showMarketingForm: false,
+                newBooking: {
+                    customerName: '',
+                    email: '',
+                    phone: '',
+                    companyName: '',
+                    demoType: '',
+                    preferredDate: '',
+                    notes: ''
+                },
+                newUpdate: {
+                    title: '',
+                    message: '',
+                    recipientsText: '',
+                    priority: 'medium'
+                },
+
+                async init() {
+                    await this.refreshData();
+                },
+
+                async refreshData() {
+                    try {
+                        const [statsRes, bookingsRes, specialistsRes, updatesRes] = await Promise.all([
+                            fetch('/api/dashboard-stats'),
+                            fetch('/api/demo-bookings'),
+                            fetch('/api/specialists'),
+                            fetch('/api/marketing-updates')
+                        ]);
+
+                        this.stats = (await statsRes.json()).data;
+                        this.demoBookings = (await bookingsRes.json()).data;
+                        this.specialists = (await specialistsRes.json()).data;
+                        this.marketingUpdates = (await updatesRes.json()).data;
+                    } catch (error) {
+                        console.error('Error refreshing data:', error);
+                        alert('Error loading data. Please try again.');
+                    }
+                },
+
+                async createBooking() {
+                    try {
+                        const response = await fetch('/api/demo-bookings', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(this.newBooking)
+                        });
+
+                        if (response.ok) {
+                            this.showBookingForm = false;
+                            this.resetBookingForm();
+                            await this.refreshData();
+                            alert('Demo booking created successfully!');
+                        } else {
+                            const error = await response.json();
+                            alert('Error: ' + error.message);
+                        }
+                    } catch (error) {
+                        console.error('Error creating booking:', error);
+                        alert('Error creating booking. Please try again.');
+                    }
+                },
+
+                async sendMarketingUpdate() {
+                    try {
+                        const recipients = this.newUpdate.recipientsText
+                            .split('\n')
+                            .map(email => email.trim())
+                            .filter(email => email);
+
+                        const response = await fetch('/api/marketing-updates', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                title: this.newUpdate.title,
+                                message: this.newUpdate.message,
+                                recipients: recipients,
+                                priority: this.newUpdate.priority
+                            })
+                        });
+
+                        if (response.ok) {
+                            this.showMarketingForm = false;
+                            this.resetMarketingForm();
+                            await this.refreshData();
+                            alert('Marketing update sent successfully!');
+                        } else {
+                            const error = await response.json();
+                            alert('Error: ' + error.message);
+                        }
+                    } catch (error) {
+                        console.error('Error sending update:', error);
+                        alert('Error sending update. Please try again.');
+                    }
+                },
+
+                async assignSpecialist(booking) {
+                    const specialistId = prompt('Enter specialist ID (1-4):');
+                    if (!specialistId) return;
+
+                    try {
+                        const response = await fetch('/api/assign-specialist', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                bookingId: booking.id,
+                                specialistId: parseInt(specialistId)
+                            })
+                        });
+
+                        if (response.ok) {
+                            await this.refreshData();
+                            alert('Specialist assigned successfully!');
+                        } else {
+                            const error = await response.json();
+                            alert('Error: ' + error.message);
+                        }
+                    } catch (error) {
+                        console.error('Error assigning specialist:', error);
+                        alert('Error assigning specialist. Please try again.');
+                    }
+                },
+
+                resetBookingForm() {
+                    this.newBooking = {
+                        customerName: '',
+                        email: '',
+                        phone: '',
+                        companyName: '',
+                        demoType: '',
+                        preferredDate: '',
+                        notes: ''
+                    };
+                },
+
+                resetMarketingForm() {
+                    this.newUpdate = {
+                        title: '',
+                        message: '',
+                        recipientsText: '',
+                        priority: 'medium'
+                    };
+                }
+            }
+        }
+    </script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</body>
+</html>
